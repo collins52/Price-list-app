@@ -1,120 +1,109 @@
+const doneBtn = document.getElementById('done-button');
 const addButton = document.getElementById('Add');
 const inputContainer = document.getElementById('input-container');
-const productInput = document.getElementById('product-input');
-const doneButton = document.getElementById('done-button');
-const productList = document.getElementById('product-list');
+const blurBackground = document.getElementById('blurBackground');
+
+addButton.addEventListener('click', function(){
+  inputContainer.style.display = 'flex';
+  blurBackground.style.display = 'block'
+})
+
+blurBackground.addEventListener('click', function (){
+  console.log('This fjjffj')
+  if(blurBackground.style.display == 'block'){
+    blurBackground.style.display = 'none';
+    inputContainer.style.display = 'none'
+  }
+})
+
+doneBtn.addEventListener('click', async ()=>{
+  const name = document.getElementById('product-name').value;
+  const price = parseFloat(document.getElementById('price').value);
+  
+  if(!name || !price){
+    alert('pls enter product name and price')
+   return;
+  }
+  
+  let imageUrl = "";
+  
+  if(imageFile){
+    console.log('blabla')
+    console.log('true')
+    const storageRef = storage.ref().child("product-images/" + imageFile.name);
+    await storageRef.put(imageFile);
+    imageUrl = await storageRef.getDownloadURL();
+  }
+  
+  const product = {
+    name,
+    price,
+    imageUrl,
+    timestamp: new Date()
+  };
+  
+  try{
+    await
+    db.collection('products').add(product);
+    alert('product added');
+    
+    document.getElementById('product-name').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('productImage').value = '';
+  } catch (error){
+    console.error('error adding product', error);
+  }
+})
+
+// DISPLAY PRODUCT FROM FIRE STORE
+
+// Search filter
 const searchInput = document.getElementById('search');
-const container = document.getElementById('container')
+let allProducts = []; // store all products
 
-// Load saved products from localStorage on page load
-loadProductsFromStorage();
-
-document.addEventListener('click', function(event){
-    const $target = event.target;
-
-    // DONE BUTTON
-    if($target.id.includes('done-button')){
-        const inputValue = productInput.value.trim();
-
-        // Validate input format: 'product - #price'
-        if(inputValue.includes('-')){
-
-            // create new product item (li)
-            const newProductItem = document.createElement('li');
-            newProductItem.className = 'product-item';
-            newProductItem.innerHTML = `${inputValue}<button type="button" id="delete-button">Delete</button>`;
-            productList.appendChild(newProductItem)
-        }else {
-            alert('Please enter in the correct format: product - #price');
-        }
-
-        inputContainer.style.display = 'none';
-        productInput.value = '';
-
-        // Save to localStorage
-        saveProductToStorage(inputValue)
-    }
-
-    // Remove input container when the clicked element is not the done button
-    if($target.id.includes('container')){
-        inputContainer.style.display = 'none';
-    }
-
-    // ADD BUTTON
-    if($target.id.includes('Add')){
-        inputContainer.style.display = 'block';
-    }
-    // DELTE BUTTON
-    if($target.id.includes('delete-button')){
-        const productItem = event.target.parentElement; // Get the parent of event.target i.e the delete button
-        const productText = productItem.textContent.replace('Delete', '').trim(); // Get the product text without delete. i think this removes the textContent i.e "delete" of the button.
-        
-        // Remove product item from the list
-        productList.removeChild(productItem);
-        deleteProductFromStorage(productText);
-    }
+// listen to fire store for updates
+db.collection("products").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+  allProducts = []; //Store all products
+  snapshot.forEach((doc) => {
+    const product = doc.data();
+    product.id = doc.id // add ID for Delete functionality
+    allProducts.push(product)
+  })
+  displayProducts(allProducts)
 })
 
-// Function to delete product from local storage
-
-function deleteProductFromStorage(product){
-    let products = JSON.parse(localStorage.getItem('products')) || []; // get the array
-    products = products.filter(item => item !== product); //Remove product from array
-    localStorage.setItem('products', JSON.stringify(products)); //update local storage
+// display function
+function displayProducts(products){
+  const productList = document.getElementById('product-list');
+  productList.innerHTML = ''
+  products.forEach(product => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+    <div>${product.name} - ₦${product.price}</div> <button type="button" onclick="deleteProduct('${product.id}')">Delete</button>
+    ${product.imageUrl ? `<img src = "${product.imageUrl}" width="100px">`: ""}
+    `
+    productList.appendChild(li);
+  })
+  
 }
-
-// Function to save product from local storage
-
-function saveProductToStorage(product){
-    let products = JSON.parse(localStorage.getItem('products')) || [];
-    products.push(product); //add new item to array
-    localStorage.setItem('products', JSON.stringify(products)); //Save to local storage after adding new item
-
-}
-
-// Function to load product from local storage
-
-function loadProductsFromStorage(){
-    const products = JSON.parse(localStorage.getItem('products')) || [];
-    products.forEach(function (product) {
-        const newProductItem = document.createElement('li');
-        newProductItem.className = 'product-item';
-        newProductItem.innerHTML = `${product} <button type="button" class="edit-button">Delete</button>`;
-        productList.appendChild(newProductItem);
-    })
-}
-
-// Search function: Filters the product list as the user typesin the search box
-
-searchInput.addEventListener('input', function(){
-    const filter = searchInput.value.toLowerCase();
-    const productItems = document.getElementsByClassName('product-item');
-
-    Array.from(productItems).forEach(function(item){
-        const text = item.textContent.toLowerCase();
-        if(text.includes(filter)){
-            item.style.display = '';
-        }else{
-            item.style.display = 'none'
-        }
-    })
+searchInput.addEventListener('input', () => {
+   const query = searchInput.value.toLowerCase();
+   const filtered = allProducts.filter(p => p.name.toLowerCase().includes(query));
+   displayProducts(filtered)
 })
 
-// if ('serviceWorker' in navigator) {
-//     navigator.serviceWorker.register('service-worker.js')
-//       .then(reg => console.log('Service Worker registered:', reg))
-//       .catch(err => console.error('Service Worker registration failed:', err));
-//   }
-
-if ('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/service-worker.js')
-    .then((registration) => {
-        console.log('Service Worker registered with scope:', registration.scope);
-    })
-    .catch((error) =>{
-        console.log('Service Worker registration failed', error);
-    });
+async function deleteProduct(id){
+  if(confirm("Are you sure you want to delete this item")){
+    try{
+      await
+      db.collection('products').doc(id).delete();
+      alert('product deleted')
+    }catch(error){
+      console.error('Error deleting product:', error);
+      alert('failed to delete product')
+    }
+  }
 }
 
-
-
+window.addEventListener('offline', () => alert('You are now offline'));
+window.addEventListener('online', () => alert('You are back online'));
