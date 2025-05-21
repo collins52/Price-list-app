@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Price list app</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css"><!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-storage-compat.js"></script>
+
+<!-- Firebase configuration -->
+<script src="firebaseConfig.js" defer></script>
 </head>
 <body>
     <header>
@@ -16,16 +21,19 @@
 
     <div id="container">
         <ul id="product-list">
+          
             
         </ul>
     </div>
 
-        <div id="input-container">
-            <input type="text" id="product-input" placeholder="Enter product - #price">
-            <button type="button" id="done-button">Done</button>
-        </div>
-
+    <div id="input-container">
+        <input type="text" id="product-name" placeholder="Product name">
+        <input type="number" id="price" name="Price" placeholder="insert price">
+        <input type="file" id="productImage" accept="image/*">
+        <button type="button" id="done-button">Done</button>
+    </div>
+    <div id="blurBackground"></div>
     <button type="button" id="Add">Add</button>
-    
+    <script src="script.js" defer></script>
 </body>
 </html>
