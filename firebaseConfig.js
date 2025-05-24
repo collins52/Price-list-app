@@ -19,6 +19,21 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
+// ENABLE PERSISTENCE
+firebase.firestore().enablePersistence()
+  .then(() => {
+    console.log("Offline persistence enabled");
+  })
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Persistence is not available in this browser.');
+    } else {
+      console.warn("Persistence error:", err);
+    }
+  });
+
 // Initialize Firestore and Storage
 const db = firebase.firestore();
 const storage = firebase.storage();
@@ -26,13 +41,4 @@ const storage = firebase.storage();
 // Export for use in other scripts
 window.db = db;
 window.storage = storage;
-
-db.enablePersistence()
-  .catch(function(err) {
-    if (err.code == 'failed-precondition') {
-      console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.");
-    } else if (err.code == 'unimplemented') {
-      console.warn("Persistence is not available in this browser.");
-    }
-  });
   
