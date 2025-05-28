@@ -26,6 +26,7 @@ blurBackground.addEventListener('click', function (){
 doneBtn.addEventListener('click', async ()=>{
   const name = document.getElementById('product-name').value;
   const price = parseFloat(document.getElementById('price').value);
+  const imageFile = document.getElementById('productImage').files[0];
   
   if(!name || !price){
     alert('pls enter product name and price')
