@@ -1,6 +1,4 @@
 // firebaseConfig.js
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCiQODTxR3ctKqeK2ZsHHPdoO-DiFB3HEY",
   authDomain: "price-list-app-8a733.firebaseapp.com",
@@ -12,31 +10,22 @@ const firebaseConfig = {
   measurementId: "G-EJ0330PSPV"
 };
 
-// Initialize Firebase
+// Firebase v8 style
 firebase.initializeApp(firebaseConfig);
-
-// Initialize services
-const db = firebase.firestore();
-const storage = firebase.storage();
 
 // Enable offline persistence
 firebase.firestore().enablePersistence()
-  .then(() => {
-    console.log("Offline persistence enabled");
-
-    // Expose db and storage after persistence is ready
-    window.db = db;
-    window.storage = storage;
-
-    // Notify other scripts
-    document.dispatchEvent(new Event("firebase-ready"));
-  })
+  .then(() => console.log("Offline persistence enabled"))
   .catch((err) => {
     if (err.code === 'failed-precondition') {
-      console.warn('Multiple tabs open — persistence only works in one tab.');
+      console.warn('Multiple tabs open. Persistence can only be enabled in one tab.');
     } else if (err.code === 'unimplemented') {
-      console.warn('Persistence not supported in this browser.');
-    } else {
-      console.warn("Persistence error:", err);
+      console.warn('Persistence is not supported in this browser.');
     }
   });
+
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+window.db = db;
+window.storage = storage;
